@@ -1,0 +1,155 @@
+diff --git a/Makefile b/Makefile
+index dd67513..8848708 100644
+--- a/Makefile
++++ b/Makefile
+@@ -10,37 +10,39 @@ TREE_MAKE := tree.make
+ USE_NV_ENV ?= 0
+ USE_VM_ENV ?= 0
+ 
+-NV_USE_DESIGNWARE ?= 1
++NV_USE_DESIGNWARE ?= 0
+ NV_DESIGNWARE_DIR ?= /home/tools/synopsys/syn_2011.09/dw/sim_ver
+-NV_CPP  ?= /home/utils/gcc-4.8.2/bin/cpp
+-NV_GCC  ?= /home/utils/gcc-4.8.2/bin/gcc
+-NV_CXX  ?= /home/utils/gcc-4.8.2/bin/g++
+-NV_PERL ?= /home/utils/perl-5.10/5.10.0-threads-64/bin/perl
+-NV_JAVA ?= /home/utils/java/jdk1.8.0_131/bin/java
+-NV_SYSTEMC ?= /home/ip/shared/inf/SystemC/1.0/20151112/systemc-2.3.0/GCC472_64_DBG
+-NV_PROJ ?= nv_small nv_small_256 nv_small_256_full nv_medium_512 nv_medium_1024_full nv_large
+-NV_PYTHON 	?= /home/tools/continuum/Anaconda3-5.0.1/bin/python
+-NV_VERDI_HOME ?= /home/tools/debussy/verdi3_2016.06-SP2-9
+-NV_NOVAS_HOME ?= /home/tools/debussy/verdi3_2016.06-SP2-9
+-NV_VCS_HOME   ?= /home/tools/vcs/mx-2016.06-SP2-4
++NV_CPP  ?= /usr/bin/cpp
++NV_GCC  ?= /usr/bin/gcc
++NV_CXX  ?= /usr/bin/g++
++NV_PERL ?= /usr/bin/perl
++NV_JAVA ?= /usr/bin/java
++NV_SYSTEMC ?= /usr/local/systemc-2.3.1
++NV_PROJ ?= nv_small
++#NV_PROJ ?= nv_small nv_small_256 nv_small_256_full nv_medium_512 nv_medium_1024_full nv_large
++NV_PYTHON 	?= /usr/bin/python3
++NV_VERDI_HOME ?= /opt/eda/synopsys/verdi/verdi-2018.09-SP2-11
++NV_NOVAS_HOME ?= /opt/eda/synopsys/verdi/verdi-2018.09-SP2-11
++NV_VCS_HOME   ?= /opt/eda/synopsys/vcs-mx/vcs-2018.09-SP2-3
+ NV_VERILATOR  ?= verilator
+-NV_CLANG      ?= /home/utils/llvm-4.0.1/bin/clang
++NV_CLANG      ?= /usr/bin/clang
+ 
+-VM_USE_DESIGNWARE ?= 1
++VM_USE_DESIGNWARE ?= 0
+ VM_DESIGNWARE_DIR ?= /home/tools/synopsys/syn_2011.09/dw/sim_ver
+-VM_CPP  ?= /usr/local/bin/cpp
+-VM_GCC  ?= /usr/local/bin/gcc
+-VM_CXX  ?= /usr/local/bin/g++
++VM_CPP  ?= /usr/bin/cpp
++VM_GCC  ?= /usr/bin/gcc
++VM_CXX  ?= /usr/bin/g++
+ VM_PERL ?= /usr/bin/perl
+ VM_JAVA ?= /usr/bin/java
+-VM_SYSTEMC ?= /usr/local/systemc-2.3
+-VM_PROJ ?= nv_small nv_small_256 nv_small_256_full nv_medium_512 nv_medium_1024_full nv_large
+-VM_PYTHON	?= /home/tools/continuum/Anaconda3-5.0.1/bin/python
+-VM_VERDI_HOME ?= /home/tools/debussy/verdi3_2016.06-SP2-9
+-VM_NOVAS_HOME ?= /home/tools/debussy/verdi3_2016.06-SP2-9
+-VM_VCS_HOME   ?= /home/tools/vcs/mx-2016.06-SP2-4
++VM_SYSTEMC ?= /usr/local/systemc-2.3.1
++VM_PROJ ?= nv_small
++#VM_PROJ ?= nv_small nv_small_256 nv_small_256_full nv_medium_512 nv_medium_1024_full nv_large
++VM_PYTHON	?= /usr/bin/python3
++VM_VERDI_HOME ?= /opt/eda/synopsys/verdi/verdi-2018.09-SP2-11
++VM_NOVAS_HOME ?= /opt/eda/synopsys/verdi/verdi-2018.09-SP2-11
++VM_VCS_HOME   ?= /opt/eda/synopsys/vcs-mx/vcs-2018.09-SP2-3
+ VM_VERILATOR  ?= verilator
+-VM_CLANG      ?= /home/utils/llvm-4.0.1/bin/clang
++VM_CLANG      ?= /usr/bin/clang
+ 
+ default: $(TREE_MAKE)
+ $(TREE_MAKE): Makefile
+diff --git a/verif/testbench/trace_generator/Makefile b/verif/testbench/trace_generator/Makefile
+index 8387578..ae5baef 100644
+--- a/verif/testbench/trace_generator/Makefile
++++ b/verif/testbench/trace_generator/Makefile
+@@ -111,8 +111,11 @@ VCS_ARGS    := ${COMMON_DIRS} \
+                -ntb_opts uvm-1.2 \
+                -timescale=1ns/1ns \
+                -assert enable_diag \
++               -LDFLAGS -Wl,--no-as-needed \
+                -line \
+                -full64 \
++               -debug_access+all \
++               -lca -kdb \
+                +v2k \
+                +libext+.vlib+.v+.sv+.svh \
+                ${VCS_OK_WARNINGS} \
+diff --git a/verif/testbench/trace_player/Makefile b/verif/testbench/trace_player/Makefile
+index efcf9de..40c0b38 100644
+--- a/verif/testbench/trace_player/Makefile
++++ b/verif/testbench/trace_player/Makefile
+@@ -219,12 +219,15 @@ VCS_OK_WARNINGS     := +warn=noTFIPC +warn=noTMR
+ 
+ VCS_ARGS    := ${COMMON_DIRS} \
+                -sverilog \
++               -LDFLAGS -Wl,--no-as-needed \
+                -ntb_opts uvm-1.2 \
+                -timescale=1ns/1ns \
+                -assert enable_diag \
+                -line \
+                -cc ${GCC} -cpp ${CXX} -ld ${CXX} -Xcombo=0x11 \
+                -full64 \
++			   -debug_access+all \
++			   -lca -kdb \
+                +v2k \
+                +libext+.vlib+.v+.sv+.svh \
+                +define+NVTOOLS_SYNC2D_GENERIC_CELL \
+@@ -232,7 +235,6 @@ VCS_ARGS    := ${COMMON_DIRS} \
+                ${VCS_OK_WARNINGS} \
+                ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a \
+                +vcsd \
+-			   -parallel+sva+tgl \
+                -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab 
+ 
+ # add 'COVERAGE := 1' in tree.make
+@@ -274,7 +276,7 @@ endif
+ #   SYSC_VER = Specify the SystemC version that Syscan should use (For example 230,220)
+ 
+ SYSCAN_EXE   := syscan
+-SYSC_VER     ?= 230
++SYSC_VER     ?= 2.3.1
+ _SYSC_VER    ?= -sysc=$(SYSC_VER)
+ 
+ 
+@@ -287,7 +289,7 @@ SYSC_SRC_TB   += ${TOP_SCSV_ADAPTER_DIR}/sc/nvdla_top_sc_adapter.cpp:nvdla_top_s
+ SYSC_SRC      := ${SYSC_SRC_UVMC} ${subst ${TOT},${TOT}/${OUTDIR}/${PROJECT},${SYSC_SRC_TB}}
+ 
+ SYSC_CINCDIRS    := ${UVMCONNECT_HOME}/src/connect/sc
+-SYSC_CINCDIRS    += $(VCS_HOME)/include/systemc23
++SYSC_CINCDIRS    += $(VCS_HOME)/include/systemc231
+ SYSC_CINCDIRS    += ${CMOD_DIR}/include
+ SYSC_CINCDIRS_TB += ${SCSV_COMMON_DIR}/sc
+ SYSC_CINCDIRS_TB += ${TOP_SCSV_ADAPTER_DIR}/sc
+@@ -331,7 +333,7 @@ sysc_build: ${VERIF_DST_FILES}
+ 
+ vcs_build: sysc_build ${DEFS_FILE} ${DUT_FILES} ${DPI_FILES} ${UVMC_FILES}
+ 	${MKDIRP} ${OUT_DIR} && cd ${OUT_DIR} && \
+-	$(VCS_HOME)/bin/vcs -sysc=230 ${VCS_ARGS} ${VCS_LIBS_ALL} ${VCS_LDFLAGS} ${VCS_CFLAGS} ${DEFS_FILE} ${DUT_FILES} ${TB_FILES} ${DPI_FILES} -l ${COMPILELOG} -o ${VCS_EXE} -Mdir=csrc
++	$(VCS_HOME)/bin/vcs -sysc=2.3.1 ${VCS_ARGS} ${VCS_LIBS_ALL} ${VCS_LDFLAGS} ${VCS_CFLAGS} ${DEFS_FILE} ${DUT_FILES} ${TB_FILES} ${DPI_FILES} -l ${COMPILELOG} -o ${VCS_EXE} -Mdir=csrc
+ 
+ gen_verdi_cmd:
+ 	@echo "#!/bin/sh"                        > ${OUT_DIR}/run_verdi.sh
+diff --git a/verif/vip/reference_model/nvdla_cmod_wrap/Makefile b/verif/vip/reference_model/nvdla_cmod_wrap/Makefile
+index c2ff612..0333127 100644
+--- a/verif/vip/reference_model/nvdla_cmod_wrap/Makefile
++++ b/verif/vip/reference_model/nvdla_cmod_wrap/Makefile
+@@ -1,9 +1,9 @@
+ override DEPTH = ../../../..
+ -include ${DEPTH}/tree.make
+ -include ${DEPTH}/tools/make/common.make
+-override SYSTEMC_INC_DIR   = $(VCS_HOME)/include/systemc23
++override SYSTEMC_INC_DIR   = $(VCS_HOME)/include/systemc231
+ override SYSTEMC_LIB_DIR   = $(VCS_HOME)/linux64/lib
+-override SYSTEMC_LIBRARIES = libsystemc23-gcc472-64.a
++override SYSTEMC_LIBRARIES = libsystemc231-gcc4-64.a
+ include ../../../../cmod/Makefile
+ UVMCONNECT_HOME  := ${TOT}/third_party_tools/uvmc-2.3.0
+ 
